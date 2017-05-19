@@ -134,7 +134,7 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 				visitor.visitAnnotationOnLocal((JCVariableDecl) up().get(), this, (JCAnnotation) get());
 				break;
 			default:
-				throw new AssertionError("Annotion not expected as child of a " + up().getKind());
+				throw new AssertionError("Annotation not expected as child of a " + up().getKind());
 			}
 			break;
 		default:

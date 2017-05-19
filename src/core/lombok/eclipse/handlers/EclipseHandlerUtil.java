@@ -45,6 +45,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.EmptyCheckExceptionType;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.debug.ProblemReporter;
 import lombok.core.handlers.HandlerUtil;
@@ -1459,6 +1460,56 @@ public class EclipseHandlerUtil {
 		ThrowStatement throwStatement = new ThrowStatement(exception, pS, pE);
 		setGeneratedBy(throwStatement, source);
 		
+		SingleNameReference varName = new SingleNameReference(variable.name, p);
+		setGeneratedBy(varName, source);
+		NullLiteral nullLiteral = new NullLiteral(pS, pE);
+		setGeneratedBy(nullLiteral, source);
+		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, OperatorIds.EQUAL_EQUAL);
+		equalExpression.sourceStart = pS; equalExpression.statementEnd = equalExpression.sourceEnd = pE;
+		setGeneratedBy(equalExpression, source);
+		Block throwBlock = new Block(0);
+		throwBlock.statements = new Statement[] {throwStatement};
+		throwBlock.sourceStart = pS; throwBlock.sourceEnd = pE;
+		setGeneratedBy(throwBlock, source);
+		IfStatement ifStatement = new IfStatement(equalExpression, throwBlock, 0, 0);
+		setGeneratedBy(ifStatement, source);
+		return ifStatement;
+	}
+
+	/**
+	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
+	 * variable name as message.
+	 *
+	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
+	 */
+	public static Statement generateNonEmptyCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode) {
+		EmptyCheckExceptionType exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_EMPTY_EXCEPTION_TYPE);
+		if (exceptionType == null) exceptionType = EmptyCheckExceptionType.ILLEGAL_ARGUMENT_EXCEPTION;
+
+		// TODO: provide implementation
+
+		ASTNode source = sourceNode.get();
+
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+
+		if (isPrimitive(variable.type)) return null;
+		AllocationExpression exception = new AllocationExpression();
+		setGeneratedBy(exception, source);
+		int partCount = 1;
+		String exceptionTypeStr = exceptionType.getExceptionType();
+		for (int i = 0; i < exceptionTypeStr.length(); i++) if (exceptionTypeStr.charAt(i) == '.') partCount++;
+		long[] ps = new long[partCount];
+		Arrays.fill(ps, 0L);
+		exception.type = new QualifiedTypeReference(fromQualifiedName(exceptionTypeStr), ps);
+		setGeneratedBy(exception.type, source);
+		exception.arguments = new Expression[] {
+				new StringLiteral(exceptionType.toExceptionMessage(new String(variable.name)).toCharArray(), pS, pE, 0)
+		};
+		setGeneratedBy(exception.arguments[0], source);
+		ThrowStatement throwStatement = new ThrowStatement(exception, pS, pE);
+		setGeneratedBy(throwStatement, source);
+
 		SingleNameReference varName = new SingleNameReference(variable.name, p);
 		setGeneratedBy(varName, source);
 		NullLiteral nullLiteral = new NullLiteral(pS, pE);

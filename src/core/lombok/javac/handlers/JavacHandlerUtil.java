@@ -25,6 +25,7 @@ import static com.sun.tools.javac.code.Flags.GENERATEDCONSTR;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacAugments.JCTree_generatedNode;
+import static lombok.javac.handlers.JavacHandlerUtil.typeMatches;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -45,9 +46,11 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.FieldAugment;
 import lombok.core.LombokImmutableList;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.EmptyCheckExceptionType;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.handlers.HandlerUtil;
 import lombok.delombok.LombokOptionsFactory;
@@ -1209,17 +1212,17 @@ public class JavacHandlerUtil {
 		}	
 		return result.toList();
 	}
-	
+
 	/**
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
 	 * variable name as message.
-	 * 
+	 *
 	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
 	public static JCStatement generateNullCheck(JavacTreeMaker maker, JavacNode variable, JavacNode source) {
 		NullCheckExceptionType exceptionType = source.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
 		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
-		
+
 		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
@@ -1228,6 +1231,48 @@ public class JavacHandlerUtil {
 		JCStatement throwStatement = maker.Throw(exception);
 		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));
 		return maker.If(maker.Binary(CTC_EQUAL, maker.Ident(fieldName), maker.Literal(CTC_BOT, null)), throwBlock, null);
+	}
+
+	/**
+	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
+	 * variable name as message.
+	 *
+	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
+	 */
+	public static JCStatement generateNonEmptyCheck(JavacTreeMaker maker, JavacNode variable, JavacNode source, String method) {
+		EmptyCheckExceptionType exceptionType = source.getAst().readConfiguration(ConfigurationKeys.NON_EMPTY_EXCEPTION_TYPE);
+		if (exceptionType == null) exceptionType = EmptyCheckExceptionType.ILLEGAL_ARGUMENT_EXCEPTION;
+
+		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
+		if (isPrimitive(varDecl.vartype)) return null;
+		Name fieldName = varDecl.name;
+		JCExpression exType = genTypeRef(variable, exceptionType.getExceptionType());
+		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), exType, List.<JCExpression>of(maker.Literal(exceptionType.toExceptionMessage(fieldName.toString()))), null);
+		JCStatement throwStatement = maker.Throw(exception);
+		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));
+
+		// #1
+		// if STRING ... then ...
+		// if annotation trimmed is false
+
+		// not sure if most elegant way ... but it works
+		//varDecl.getName().append(method);
+		Name getLength = varDecl.getName().append(variable.toName(method));
+		//maker.MethodDef(fieldName, "length");
+
+		System.out.println("*****");
+		JCStatement isEmpty = maker.If(maker.Binary(CTC_EQUAL, maker.Ident(getLength), maker.Literal(CTC_INT, 0)), throwBlock, null);
+		JCBlock checkEmptyBlock = maker.Block(0, List.of(isEmpty));
+
+		// TODO insert proper check
+		// varDecl.getType().accept(String.class);
+
+		// ListBuffer<JCTree.JCCase> cases = new ListBuffer<JCTree.JCCase>();
+
+
+		return maker.If(maker.Binary(CTC_EQUAL, maker.Ident(fieldName), maker.Literal(CTC_BOT, null)),
+				throwBlock,
+				checkEmptyBlock);
 	}
 	
 	/**

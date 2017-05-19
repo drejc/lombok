@@ -25,6 +25,7 @@ import java.util.List;
 
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.ConfigurationKey;
+import lombok.core.configuration.EmptyCheckExceptionType;
 import lombok.core.configuration.FlagUsageType;
 import lombok.core.configuration.NullCheckExceptionType;
 
@@ -275,7 +276,27 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @NonNull} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> NON_NULL_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.nonNull.flagUsage", "Emit a warning or error if @NonNull is used.") {};
-	
+
+	// ----- NonEmpty -----
+
+	/**
+	 * lombok configuration: {@code lombok.NonEmpty.exceptionType} = &lt;String: <em>a java exception type; either [{@code IllegalArgumentException} or: {@code NullPointerException}].
+	 *
+	 * Sets the exception to throw if {@code @NonEmpty} is applied to a method parameter, and a caller passes in {@code null}.
+	 */
+	public static final ConfigurationKey<EmptyCheckExceptionType> NON_EMPTY_EXCEPTION_TYPE = new ConfigurationKey<EmptyCheckExceptionType>("lombok.NonEmpty.exceptionType", "The type of the exception to throw if a passed-in argument is empty (Default: IllegalArgumentException).") {};
+
+	/**
+	 * lombok configuration: {@code lombok.NonEmpty.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 *
+	 * <em>Implementation note: This field is supposed to be lombok.NonEmpty itself, but jdk6 and 7 have bugs where fields in annotations don't work well.</em>
+	 *
+	 * If set, <em>any</em> usage of {@code @NonEmpty} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> NON_EMPTY_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.NonEmpty.flagUsage", "Emit a warning or error if @NonEmpty is used.") {};
+
+
+
 	// ----- SneakyThrows -----
 	
 	/**

@@ -1260,9 +1260,11 @@ public class JavacHandlerUtil {
 		Name getLength = varDecl.getName().append(variable.toName(method));
 		//maker.MethodDef(fieldName, "length");
 
+		JCVariableDecl size = maker.VarDef(maker.Modifiers(Flags.FINAL), variable.toName("$size"), maker.TypeIdent(CTC_INT), maker.Ident(getLength));
+
 		System.out.println("*****");
-		JCStatement isEmpty = maker.If(maker.Binary(CTC_EQUAL, maker.Ident(getLength), maker.Literal(CTC_INT, 0)), throwBlock, null);
-		JCBlock checkEmptyBlock = maker.Block(0, List.of(isEmpty));
+		JCStatement isEmpty = maker.If(maker.Binary(CTC_EQUAL, maker.Ident(size.getName()), maker.Literal(CTC_INT, 0)), throwBlock, null);
+		JCBlock checkEmptyBlock = maker.Block(0, List.of(size, isEmpty));
 
 		// TODO insert proper check
 		// varDecl.getType().accept(String.class);

@@ -110,7 +110,7 @@ public class HandleNonEmpty extends JavacAnnotationHandler<NonEmpty> {
 
         List<JCStatement> statements = declaration.body.stats;
 
-        String expectedName = annotationNode.up().getName();
+        //String expectedName = annotationNode.up().getName();
 
 		/* Abort if the null check is already there, delving into try and synchronized statements */ {
             List<JCStatement> stats = statements;
@@ -128,16 +128,16 @@ public class HandleNonEmpty extends JavacAnnotationHandler<NonEmpty> {
                     idx = 0;
                     continue;
                 }
-                String varNameOfNullCheck = returnVarNameIfNonEmptyCheck(stat);
-                if (varNameOfNullCheck == null) break;
-                if (varNameOfNullCheck.equals(expectedName)) return;
+//                String varNameOfNullCheck = returnVarNameIfNonEmptyCheck(stat);
+//                if (varNameOfNullCheck == null) break;
+//                if (varNameOfNullCheck.equals(expectedName)) return;
             }
         }
 
         List<JCStatement> tail = statements;
         List<JCStatement> head = List.nil();
         for (JCStatement stat : statements) {
-            if (JavacHandlerUtil.isConstructorCall(stat) || (JavacHandlerUtil.isGenerated(stat) && isNonEmptyCheck(stat))) {
+            if (JavacHandlerUtil.isConstructorCall(stat) || (JavacHandlerUtil.isGenerated(stat))) {
                 tail = tail.tail;
                 head = head.prepend(stat);
                 continue;
@@ -151,39 +151,36 @@ public class HandleNonEmpty extends JavacAnnotationHandler<NonEmpty> {
         annotationNode.getAst().setChanged();
     }
 
-    public boolean isNonEmptyCheck(JCStatement stat) {
-        return returnVarNameIfNonEmptyCheck(stat) != null;
-    }
 
     /**
      * Checks if the statement is of the form 'if (x == null) {throw WHATEVER;},
      * where the block braces are optional. If it is of this form, returns "x".
      * If it is not of this form, returns null.
      */
-    public String returnVarNameIfNonEmptyCheck(JCStatement stat) {
-        if (!(stat instanceof JCIf)) return null;
-
-		/* Check that the if's statement is a throw statement, possibly in a block. */ {
-            JCStatement then = ((JCIf) stat).thenpart;
-            if (then instanceof JCBlock) {
-                List<JCStatement> stats = ((JCBlock) then).stats;
-                if (stats.length() == 0) return null;
-                then = stats.get(0);
-            }
-            if (!(then instanceof JCThrow)) return null;
-        }
-
-		/* Check that the if's conditional is like 'x == null'. Return from this method (don't generate
-		   a nullcheck) if 'x' is equal to our own variable's name: There's already a empty check here. */ {
-            JCExpression cond = ((JCIf) stat).cond;
-            while (cond instanceof JCParens) cond = ((JCParens) cond).expr;
-            if (!(cond instanceof JCBinary)) return null;
-            JCBinary bin = (JCBinary) cond;
-            if (!CTC_EQUAL.equals(treeTag(bin))) return null;
-            if (!(bin.lhs instanceof JCIdent)) return null;
-            if (!(bin.rhs instanceof JCLiteral)) return null;
-            if (!CTC_BOT.equals(typeTag(bin.rhs))) return null;
-            return ((JCIdent) bin.lhs).name.toString();
-        }
-    }
+//    public String returnVarNameIfNonEmptyCheck(JCStatement stat) {
+//        if (!(stat instanceof JCIf)) return null;
+//
+//		/* Check that the if's statement is a throw statement, possibly in a block. */ {
+//            JCStatement then = ((JCIf) stat).thenpart;
+//            if (then instanceof JCBlock) {
+//                List<JCStatement> stats = ((JCBlock) then).stats;
+//                if (stats.length() == 0) return null;
+//                then = stats.get(0);
+//            }
+//            if (!(then instanceof JCThrow)) return null;
+//        }
+//
+//		/* Check that the if's conditional is like 'x == null'. Return from this method (don't generate
+//		   a nullcheck) if 'x' is equal to our own variable's name: There's already a empty check here. */ {
+//            JCExpression cond = ((JCIf) stat).cond;
+//            while (cond instanceof JCParens) cond = ((JCParens) cond).expr;
+//            if (!(cond instanceof JCBinary)) return null;
+//            JCBinary bin = (JCBinary) cond;
+//            if (!CTC_EQUAL.equals(treeTag(bin))) return null;
+//            if (!(bin.lhs instanceof JCIdent)) return null;
+//            if (!(bin.rhs instanceof JCLiteral)) return null;
+//            if (!CTC_BOT.equals(typeTag(bin.rhs))) return null;
+//            return ((JCIdent) bin.lhs).name.toString();
+//        }
+//    }
 }

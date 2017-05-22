@@ -2,11 +2,10 @@ class NonEmptyOnParameter extends Thread {
 	NonEmptyOnParameter(@lombok.NonEmpty String arg) {
 		this(arg, "");
 		if (arg == null) {
-			throw new java.lang.IllegalArgumentException("arg");
-		}
-		else {
+			throw new java.lang.IllegalArgumentException("arg is null or empty");
+		} else {
 			if (arg.trim().length() == 0) {
-				throw new java.lang.IllegalArgumentException("arg");
+				throw new java.lang.IllegalArgumentException("arg is null or empty");
 			}
 		}
 	}
@@ -14,35 +13,31 @@ class NonEmptyOnParameter extends Thread {
 		super(arg);
 		if (arg2 == null) {
 			throw new java.lang.NullPointerException("arg2");
-		}
-		else {
+		} else {
 			if (arg2.trim().length() == 0) {
-				throw new java.lang.IllegalArgumentException("arg");
+				throw new java.lang.IllegalArgumentException("arg is null or empty");
 			}
 		}
 		if (arg == null) throw new NullPointerException();
 	}
 	public void test2(@lombok.NonEmpty(trim = false) String arg, @lombok.NonEmpty String arg2, @lombok.NonEmpty String arg3) {
 		if (arg == null) {
-			throw new java.lang.IllegalArgumentException("arg");
-		}
-		else {
+			throw new java.lang.IllegalArgumentException("arg is null or empty");
+		} else {
 			if (arg.length() == 0) {
-				throw new java.lang.IllegalArgumentException("arg");
+				throw new java.lang.IllegalArgumentException("arg is null or empty");
 			}
 		}
 		if (arg3 == null) {
 			throw new java.lang.IllegalArgumentException("arg3");
-		}
-		else {
+		} else {
 			if (arg3.trim().length() == 0) {
 				throw new java.lang.IllegalArgumentException("arg3");
 			}
 		}
 		if (arg2 == null) {
 			throw new IllegalArgumentException("arg2");
-		}
-		else {
+		} else {
 			if (arg2.trim().length() == 0) {
 				throw new java.lang.IllegalArgumentException("arg2");
 			}
@@ -51,11 +46,10 @@ class NonEmptyOnParameter extends Thread {
 	}
 	public void test3(@lombok.NonEmpty String arg) {
 		if (arg == null) {
-			throw new java.lang.IllegalArgumentException("arg");
-		}
-		else {
+			throw new java.lang.IllegalArgumentException("arg is null or empty");
+		} else {
 			if (arg.trim().length() == 0) {
-				throw new java.lang.IllegalArgumentException("arg");
+				throw new java.lang.IllegalArgumentException("arg is null or empty");
 			}
 		}
 		if (arg != null) throw new IllegalStateException();
@@ -63,16 +57,14 @@ class NonEmptyOnParameter extends Thread {
 	public void test(@lombok.NonEmpty String stringArg, @lombok.NonEmpty String arg2, @lombok.NonEmpty int primitiveArg) {
 		if (stringArg == null) {
 			throw new java.lang.NullPointerException("stringArg");
-		}
-		else {
+		} else {
 			if (stringArg.trim().length() == 0) {
 				throw new java.lang.IllegalArgumentException("stringArg");
 			}
 		}
 		if (arg2 == null) {
 			throw new java.lang.IllegalArgumentException("arg2");
-		}
-		else {
+		} else {
 			if (arg2.trim().length() == 0) {
 				throw new java.lang.IllegalArgumentException("arg2");
 			}
@@ -80,11 +72,10 @@ class NonEmptyOnParameter extends Thread {
 	}
 	public void test(@lombok.NonEmpty String arg) {
 		if (arg == null) {
-			throw new java.lang.IllegalArgumentException("arg");
-		}
-		else {
+			throw new java.lang.IllegalArgumentException("arg is null or empty");
+		} else {
 			if (arg.trim().length() == 0) {
-				throw new java.lang.IllegalArgumentException("arg");
+				throw new java.lang.IllegalArgumentException("arg is null or empty");
 			}
 		}
 		System.out.println("Hey");
